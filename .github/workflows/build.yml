@@ -11,6 +11,8 @@ env:
   REGISTRY: ghcr.io
   # github.repository as <account>/<repo>
   APP_IMAGE: ghcr.io/${{ github.repository }}/${{ github.ref_name }}/app
+  CONTENSIS_CLIENT_ID: 81d0b97f-376e-4e86-a36e-b6a7b0b60fbd
+  CONTENSIS_SHARED_SECRET: e34443197709457aa2334312e7e1d52b-c9c435ec62144137bd4d31e1ec84174a-dfc9d0c7f6f2489bb703f21a4005ff82
 
 jobs:
   build-builder:
@@ -86,3 +88,18 @@ jobs:
           docker build -t $LATEST_IMAGE -t $BUILD_IMAGE --cache-from $LATEST_IMAGE --build-arg builder_image=$BUILDER_IMAGE -f docker/build.Dockerfile .
           docker push --all-tags ${{ env.APP_IMAGE }}
           echo "image-uri=$BUILD_IMAGE" >> $GITHUB_OUTPUT
+  deploy:
+    name: Push block to Contensis
+    runs-on: ubuntu-latest
+    needs: build-app
+    steps:
+      - name: Push block to Contensis
+        id: push-block
+        uses: contensis/block-push@v1
+        with:
+          block-id: my-awesome-website
+          alias: leif
+          project-id: test1
+          client-id: ${{ env.CONTENSIS_CLIENT_ID }}
+          shared-secret: ${{ env.CONTENSIS_SHARED_SECRET }}
+          image-uri: ${{ env.APP_IMAGE }}:build-${{ github.run_number }}

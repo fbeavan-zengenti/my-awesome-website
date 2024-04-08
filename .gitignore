@@ -14,3 +14,5 @@ __snapshots__
 storybook-static/
 cypress/videos/
 cypress/screenshots/
+
+.env
